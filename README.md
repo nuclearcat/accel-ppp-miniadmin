@@ -3,6 +3,7 @@
 ## Description
 
 This is simple web interface for ACCEL-PPP based VPN. It is mostly created to operate with accel-ppp-docker repository, to create easy to use VPN install, but in future might work with other setups as well.
+**At current stage it is very basic and only allows to add/remove users and related docker image supports only SSTP VPN.**
 
 ## Features
 
@@ -21,7 +22,7 @@ sh install.sh
 
 ## Configuration
 
-.env file contains all configuration options - hostname and token. If you want to update token, just change it in .env file and restart docker-compose using docker-compose restart.
+.env file contains all configuration options - hostname and token. If you want to update token, just change it in .env file and restart daemons using `docker-compose restart`.
 
 ## Usage
 
