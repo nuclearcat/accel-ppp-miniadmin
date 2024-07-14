@@ -10,8 +10,22 @@ if [ ! -e docker-compose.yaml ]; then
     cd accel-ppp-miniadmin/install
 fi
 
+# verify if port 80,443,8080 available
+if [ -n "$(lsof -i :80)" ]; then
+    echo "Port 80 is already in use"
+    exit 1
+fi
+if [ -n "$(lsof -i :443)" ]; then
+    echo "Port 443 is already in use"
+    exit 1
+fi
+if [ -n "$(lsof -i :8080)" ]; then
+    echo "Port 8080 is already in use"
+    exit 1
+fi
+
 echo "Please enter secret token for SSTP Admin interface"
-read -s SSTP_ADMINTOKEN
+read SSTP_ADMINTOKEN
 echo "Please enter SSTP server hostname"
 read SSTP_HOSTNAME
 
