@@ -46,7 +46,9 @@ echo "SSTP_HOSTNAME=${SSTP_HOSTNAME}" >> .env
 
 mkdir -p accel-letsencrypt accel-ppp
 
+echo "Waiting for accel-ppp to start"
 docker-compose up -d
 
+echo "Web interface available at https://${SSTP_HOSTNAME}:8080"
 
 
