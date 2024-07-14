@@ -1,0 +1,34 @@
+version: "3.7"
+
+services:
+  accel-ppp:
+    image: nuclearcat/accel-ppp
+    container_name: accel-ppp
+    privileged: true
+    restart: always
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./accel-ppp:/etc/ppp
+      - ./accel-letsencrypt:/etc/letsencrypt
+    env_file:
+      - .env
+    networks:
+      - accelnet
+  accel-miniadmin:
+    image: nuclearcat/accel-miniadmin
+    container_name: accel-miniadmin
+    restart: always
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    networks:
+      - accelnet
+    volumes:
+      - ./accel-ppp:/etc/ppp
+      - ./accel-letsencrypt:/etc/letsencrypt
+networks:
+  accelnet:
+    driver: bridge

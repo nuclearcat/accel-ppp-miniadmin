@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ACCEL-PPP Admin interface</title>
+    <style>
+        #toast {
+            position: fixed;
+            top: 0;
+            right: 0;
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+        }
+        #token {
+            margin: 10px;
+        }
+        #users {
+            margin: 10px;
+        }
+        #adduserform {
+            margin: 10px;
+        }
+        #adduser {
+            margin: 10px;
+        }
+        #userstable {
+            margin: 10px;
+        }
+        button {
+            margin: 5px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+
+    </style>
+    <script>
+        var token = '';
+        function showStatus(msg, color) {
+            // Show disappearing "Toast" message
+            var status = document.getElementById('status');
+            status.style.display = 'block';
+            status.innerHTML = msg;
+            status.style.color = color;
+            status.style.backgroundColor = 'white';
+            // border
+            status.style.border = '1px solid ' + color;
+            // rounded corners
+            status.style.borderRadius = '5px';
+            // padding
+            status.style.padding = '10px';
+            // margin
+            status.style.margin = '10px';
+            // set timeout to clear status
+            setTimeout(function() {
+                status.innerHTML = '';
+                // no display
+                status.style.display = 'none';
+            }, 3000);
+        }
+        function verifyToken() {
+            var ltoken = document.getElementById('tokentext').value;
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            js = JSON.stringify({action: 'verify', token: ltoken});
+            xhr.send(js);
+            console.log(js);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.status == 'success') {
+                        // hide div with token input
+                        document.getElementById('token').style.display = 'none';
+                        token = response.token;
+                        showStatus(response.message, 'green');
+                        getUsers();
+                        addUserForm();
+                    } else {
+                        showStatus(response.message, 'red');
+                    }
+                }
+                if (xhr.readyState == 4 && xhr.status != 200) {
+                    showStatus('HTTP error: ' + xhr.status, 'red');
+                }
+            }
+        }
+        function addUserForm() {
+            code = '<form id="adduserform" onsubmit="addUser(); return false;">';
+            code += '<input type="text" id="user" placeholder="Username">';
+            code += '<input type="password" id="password" placeholder="Password">';
+            code += '</form>';
+            code += '<button type="submit" id="adduser">Add user</button>';
+            document.getElementById('users').innerHTML += code;
+            // assign event listener to button
+            document.getElementById('adduser').addEventListener('click', addUser);
+        }
+        function addUser() {
+            var user = document.getElementById('user').value;
+            var password = document.getElementById('password').value;
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            // set Authorization header to token
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            xhr.send(JSON.stringify({action: 'add', username: user, password: password}));
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.status == 'success') {
+                        showStatus(response.message, 'green');
+                        getUsers();
+                    } else {
+                        showStatus(response.message, 'red');
+                    }
+                }
+                if (xhr.readyState == 4 && xhr.status != 200) {
+                    showStatus('HTTP error: ' + xhr.status, 'red');
+                }
+            }
+        }
+
+        function delUser(username) {
+            console.log('Deleting user: ' + username);
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            // set Authorization header to token
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            xhr.send(JSON.stringify({action: 'delete', username: username}));
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.status == 'success') {
+                        showStatus(response.message, 'green');
+                        getUsers();
+                    } else {
+                        showStatus(response.message, 'red');
+                    }
+                }
+                if (xhr.readyState == 4 && xhr.status != 200) {
+                    showStatus('HTTP error: ' + xhr.status, 'red');
+                }
+            }
+        }
+
+        function getUsers() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            // set Authorization header to token
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            xhr.send(JSON.stringify({action: 'show'}));
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.status == 'success') {
+                        // users field have user/ip pairs
+                        var users = document.getElementById('users');
+                        // TODO add link to delete/update user
+                        users.innerHTML = '<table id="userstable"><tr><th>Username</th><th>IP</th><th>Operations</th></tr></table>';                        
+                        console.log(response.users + 'length: ' + response.users.length);
+                        for (var i = 0; i < response.users.length; i++) {
+                            var user = response.users[i];
+                            var row = document.createElement('tr');
+                            var userCell = document.createElement('td');
+                            userCell.innerHTML = user.username;
+                            var ipCell = document.createElement('td');
+                            ipCell.innerHTML = user.ip;
+                            var opsCell = document.createElement('td');
+                            var delButton = document.createElement('button');
+                            delButton.setAttribute('onclick', 'delUser("' + user.username + '")');
+                            delButton.innerHTML = 'Delete';
+                            row.appendChild(userCell);
+                            row.appendChild(ipCell);
+                            opsCell.appendChild(delButton);
+                            row.appendChild(opsCell);
+                            // add delB
+                            document.getElementById('userstable').appendChild(row);
+                        }
+                        addUserForm();
+                    } else {
+                        showStatus(response.status, 'red');
+                        // remove table
+                        users = document.getElementById('userstable');
+                        if (users) {
+                            users.parentNode.removeChild(users);
+                        }
+                    }
+                }
+                if (xhr.readyState == 4 && xhr.status != 200) {
+                    showStatus('HTTP error: ' + xhr.status, 'red');
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="token">
+        <input type="password" id="tokentext" placeholder="Secret Token">
+        <button onclick="verifyToken()">Login</button>
+    </div>
+    <div id="status">
+    </div>
+    <div id="users">
+    </div>
+    <A HREF="https://github.com/nuclearcat/accel-miniadmin">Source code</A><br/>
+    (c) 2024 NuclearCat<BR/>
+    If you want to add feature you can create pull request or pay me to do it for you<BR/>
+</body>
+</html>
