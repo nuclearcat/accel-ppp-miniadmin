@@ -6,8 +6,8 @@ if [ ! -e docker-compose.yaml ]; then
         echo "Error: git is not installed."
         apt-get install git
     fi
-    git clone https://github.com/nuclearcat/accel-miniadmin
-    cd accel-miniadmin/install
+    git clone https://github.com/nuclearcat/accel-ppp-miniadmin
+    cd accel-ppp-miniadmin/install
 fi
 
 echo "Please enter secret token for SSTP Admin interface"
