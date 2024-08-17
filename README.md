@@ -15,7 +15,7 @@ This is simple web interface for ACCEL-PPP based VPN. It is mostly created to op
 You need host with ports 443(for SSTP), 80(for Let's encrypt certbot) and 8080(for miniadmin) available and open. Also you need hostname pointing to this host.
 
 ```bash
-git clone git@github.com:nuclearcat/accel-ppp-miniadmin.git
+git clone https://github.com/nuclearcat/accel-ppp-miniadmin.git
 cd accel-ppp-miniadmin/install
 sh install.sh
 ```

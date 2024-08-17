@@ -10,6 +10,17 @@ if [ ! -e docker-compose.yaml ]; then
     cd accel-ppp-miniadmin/install
 fi
 
+# is docker installed? and docker-compose?
+if ! [ -x "$(command -v docker)" ]; then
+    echo "Error: docker is not installed."
+    exit 1
+fi
+
+if ! [ -x "$(command -v docker-compose)" ]; then
+    echo "Error: docker-compose is not installed."
+    exit 1
+fi
+
 # verify if port 80,443,8080 available
 if [ -n "$(lsof -i :80)" ]; then
     echo "Port 80 is already in use"
