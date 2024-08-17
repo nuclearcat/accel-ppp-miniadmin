@@ -433,12 +433,12 @@ func main() {
 	}
 
 	if httponly == "false" {
-		installCerts()
 		// Get hostname from env SSTP_HOSTNAME
 		Hostname = os.Getenv("SSTP_HOSTNAME")
 		if Hostname == "" {
 			log.Fatal("SSTP_HOSTNAME not set")
 		}
+		installCerts()
 	} else {
 		Hostname = "localhost"
 	}
