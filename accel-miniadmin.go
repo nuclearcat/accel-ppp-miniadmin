@@ -5,21 +5,21 @@ ACCEL-PPP mini admin web interface
 package main
 
 import (
+	"bufio"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strings"
-	"encoding/json"
-	"bufio"
 	"time"
 )
 
 var (
-	Hostname string
+	Hostname   string
 	Admintoken string
-	Chapfile string
+	Chapfile   string
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -223,11 +223,11 @@ func delUser(username string) error {
 
 type User struct {
 	Username string `json:"username"`
-	IP string `json:"ip"`
+	IP       string `json:"ip"`
 }
 
 type UserList struct {
-	Users []User `json:"users"`
+	Users  []User `json:"users"`
 	Status string `json:"status"`
 }
 
@@ -257,14 +257,13 @@ func showUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	/*
-	{ "status": "success",
-	  "users": {
-	  			"username1": "ip1",
-				"username2": "ip2"
-	  }
-	}
+		{ "status": "success",
+		  "users": {
+		  			"username1": "ip1",
+					"username2": "ip2"
+		  }
+		}
 	*/
-
 
 	var userList UserList
 	userList.Status = "success"
@@ -321,7 +320,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// check if Authorization header is valid
-	if r.Header.Get("Authorization") != "Bearer " + Admintoken {
+	if r.Header.Get("Authorization") != "Bearer "+Admintoken {
 		http.Error(w, "Invalid token", http.StatusForbidden)
 		return
 	}
@@ -372,10 +371,10 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 /*
-	Search certificates in /etc/letsencrypt/live and install them to /etc/ssl/
-    ln -s /etc/letsencrypt/live/${SSTP_HOSTNAME}/fullchain.pem /etc/accel-ppp/ca.crt
-    ln -s /etc/letsencrypt/live/${SSTP_HOSTNAME}/privkey.pem /etc/accel-ppp/server.key
-    ln -s /etc/letsencrypt/live/${SSTP_HOSTNAME}/cert.pem /etc/accel-ppp/server.crt
+		Search certificates in /etc/letsencrypt/live and install them to /etc/ssl/
+	    ln -s /etc/letsencrypt/live/${SSTP_HOSTNAME}/fullchain.pem /etc/accel-ppp/ca.crt
+	    ln -s /etc/letsencrypt/live/${SSTP_HOSTNAME}/privkey.pem /etc/accel-ppp/server.key
+	    ln -s /etc/letsencrypt/live/${SSTP_HOSTNAME}/cert.pem /etc/accel-ppp/server.crt
 */
 func installCerts() {
 	// check if letsencrypt fullchain.pem exists, if not keep looping and sleeping
@@ -416,7 +415,6 @@ func main() {
 	var cert string
 	var cacert string
 	var httponly string
-	
 
 	flag.StringVar(&port, "port", "8080", "port to listen on")
 	flag.StringVar(&privkey, "privkey", "/etc/ssl/server.key", "path to private key")
@@ -424,15 +422,9 @@ func main() {
 	flag.StringVar(&cacert, "cacert", "/etc/ssl/ca.crt", "path to CA certificate")
 	flag.StringVar(&Chapfile, "chapfile", "/etc/ppp/chap-secrets", "path to chap-secrets file")
 	// force http
-	flag.StringVar(&httponly, "http", "false", "force http")
+	flag.StringVar(&httponly, "http", "false", "force http only")
 
 	flag.Parse()
-
-	// Get hostname from env SSTP_HOSTNAME
-	Hostname = os.Getenv("SSTP_HOSTNAME")
-	if Hostname == "" {
-		log.Fatal("SSTP_HOSTNAME not set")
-	}
 
 	// Get admin password from env SSTP_ADMINTOKEN
 	Admintoken = os.Getenv("SSTP_ADMINTOKEN")
@@ -440,7 +432,16 @@ func main() {
 		log.Fatal("SSTP_ADMINTOKEN not set")
 	}
 
-	installCerts()
+	if httponly == "false" {
+		installCerts()
+		// Get hostname from env SSTP_HOSTNAME
+		Hostname = os.Getenv("SSTP_HOSTNAME")
+		if Hostname == "" {
+			log.Fatal("SSTP_HOSTNAME not set")
+		}
+	} else {
+		Hostname = "localhost"
+	}
 
 	http.HandleFunc("/", handler)
 	http.HandleFunc("/static/", staticHandler)
@@ -453,7 +454,6 @@ func main() {
 		log.Printf("Listening on port %s", port)
 		log.Fatal(http.ListenAndServe(":"+port, nil))
 	}
-
 
 	// check SSL certificates
 	if _, err = os.Stat(privkey); os.IsNotExist(err) {

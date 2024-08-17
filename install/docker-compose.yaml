@@ -29,6 +29,7 @@ services:
     volumes:
       - ./accel-ppp:/etc/ppp
       - ./accel-letsencrypt:/etc/letsencrypt
+#    command: /usr/bin/accel-miniadmin -http true
 networks:
   accelnet:
     driver: bridge

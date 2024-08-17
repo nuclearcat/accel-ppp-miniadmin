@@ -45,28 +45,19 @@
         }
 
     </style>
+    <!-- include boostrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script>
         var token = '';
         function showStatus(msg, color) {
             // Show disappearing "Toast" message
-            var status = document.getElementById('status');
-            status.style.display = 'block';
-            status.innerHTML = msg;
-            status.style.color = color;
-            status.style.backgroundColor = 'white';
-            // border
-            status.style.border = '1px solid ' + color;
-            // rounded corners
-            status.style.borderRadius = '5px';
-            // padding
-            status.style.padding = '10px';
-            // margin
-            status.style.margin = '10px';
-            // set timeout to clear status
+            var toast = document.getElementById('toast');
+            toast.innerHTML = msg;
+            toast.style.backgroundColor = color;
+            toast.style.display = 'block';
             setTimeout(function() {
-                status.innerHTML = '';
-                // no display
-                status.style.display = 'none';
+                toast.style.display = 'none';
             }, 3000);
         }
         function verifyToken() {
@@ -83,6 +74,9 @@
                     if (response.status == 'success') {
                         // hide div with token input
                         document.getElementById('token').style.display = 'none';
+                        document.getElementById('tokenrow').style.display = 'none';
+                        // show usersrow
+                        document.getElementById('usersrow').style.display = 'block';
                         token = response.token;
                         showStatus(response.message, 'green');
                         getUsers();
@@ -97,14 +91,11 @@
             }
         }
         function addUserForm() {
-            code = '<form id="adduserform" onsubmit="addUser(); return false;">';
-            code += '<input type="text" id="user" placeholder="Username">';
-            code += '<input type="password" id="password" placeholder="Password">';
-            code += '</form>';
-            code += '<button type="submit" id="adduser">Add user</button>';
-            document.getElementById('users').innerHTML += code;
-            // assign event listener to button
-            document.getElementById('adduser').addEventListener('click', addUser);
+            var adduserform = document.getElementById('adduserform');
+            adduserform.innerHTML = '<div id="adduser"></div>';
+            var adduser = document.createElement('div');
+            adduser.innerHTML = '<input type="text" id="user" placeholder="Username"><input type="password" id="password" placeholder="Password">';
+            adduserform.appendChild(adduser);
         }
         function addUser() {
             var user = document.getElementById('user').value;
@@ -126,7 +117,12 @@
                     }
                 }
                 if (xhr.readyState == 4 && xhr.status != 200) {
-                    showStatus('HTTP error: ' + xhr.status, 'red');
+                    // if 400 and content is text then show it
+                    if (xhr.status == 400) {
+                        showStatus(xhr.responseText, 'red');
+                    } else {
+                        showStatus('HTTP error: ' + xhr.status, 'red');
+                    }
                 }
             }
         }
@@ -153,6 +149,8 @@
                     showStatus('HTTP error: ' + xhr.status, 'red');
                 }
             }
+            showStatus('Deleting user: ' + username, 'green');
+            getUsers();
         }
 
         function getUsers() {
@@ -169,34 +167,38 @@
                         // users field have user/ip pairs
                         var users = document.getElementById('users');
                         // TODO add link to delete/update user
-                        users.innerHTML = '<table id="userstable"><tr><th>Username</th><th>IP</th><th>Operations</th></tr></table>';                        
-                        console.log(response.users + 'length: ' + response.users.length);
-                        for (var i = 0; i < response.users.length; i++) {
-                            var user = response.users[i];
-                            var row = document.createElement('tr');
-                            var userCell = document.createElement('td');
-                            userCell.innerHTML = user.username;
-                            var ipCell = document.createElement('td');
-                            ipCell.innerHTML = user.ip;
-                            var opsCell = document.createElement('td');
-                            var delButton = document.createElement('button');
-                            delButton.setAttribute('onclick', 'delUser("' + user.username + '")');
-                            delButton.innerHTML = 'Delete';
-                            row.appendChild(userCell);
-                            row.appendChild(ipCell);
-                            opsCell.appendChild(delButton);
-                            row.appendChild(opsCell);
-                            // add delB
-                            document.getElementById('userstable').appendChild(row);
+                        users.innerHTML = '<div id="userstable"></div>';
+                        var table = document.createElement('table');
+                        table.innerHTML = '<tr><th>User</th><th>IP</th><th>Actions</th></tr>';
+                        console.log(response);
+                        for (var user of response.users) {
+                            console.log(user);
+                            // username / ip
+                            var tr = document.createElement('tr');
+                            var td = document.createElement('td');
+                            td.innerHTML = user.username;
+                            tr.appendChild(td);
+                            td = document.createElement('td');
+                            td.innerHTML = user.ip;
+                            tr.appendChild(td);
+                            td = document.createElement('td');
+                            var del = document.createElement('button');
+                            del.innerHTML = 'Delete';
+                            del.onclick = function() { delUser(user['username']); };
+                            // add bootstrap classes
+                            del.classList.add('btn');
+                            del.classList.add('btn-danger');
+                            td.appendChild(del);
+                            tr.appendChild(td);
+
+                            table.appendChild(tr);
                         }
+                        users.appendChild(table);
                         addUserForm();
                     } else {
                         showStatus(response.status, 'red');
                         // remove table
-                        users = document.getElementById('userstable');
-                        if (users) {
-                            users.parentNode.removeChild(users);
-                        }
+                        document.getElementById('users').innerHTML = '';
                     }
                 }
                 if (xhr.readyState == 4 && xhr.status != 200) {
@@ -207,16 +209,58 @@
     </script>
 </head>
 <body>
-    <div id="token">
-        <input type="password" id="tokentext" placeholder="Secret Token">
-        <button onclick="verifyToken()">Login</button>
+    <div id="toast"></div>
+
+    <!-- BOOTSTRAP LOGIN SCREEN -->     
+    <div class="container">
+        <div class="row" id="tokenrow">
+            <div class="col-md-4 offset-md-4">
+                <div class="card">                    
+                    <div class="card-header">
+                        <h3>Management interface login</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="token" onsubmit="verifyToken(); return false;">
+                            <div class="form-group mb-3">
+                                <label for="tokentext">Secret Token</label>
+                                <input type="password" id="tokentext" class="form-control" placeholder="Secret Token">
+                            </div>
+                            <button type="submit" class="btn btn-primary" onclick="verifyToken()">Login</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" id="usersrow" style="display: none;">
+            <!-- wider card -->
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Users</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="users"></div>
+                    </div>
+                    <!-- adduserform -->
+                    <div class="card-footer">
+                        <div id="adduserform"></div>
+                        <button type="submit" class="btn btn-primary" onclick="addUser()">Add user</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- copyrights at left -->
+        <div class="row">
+            <div class="col-md-4 offset-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <A HREF="https://github.com/nuclearcat/accel-ppp-miniadmin">Source code</A><br/>
+                        (c) 2024 NuclearCat<BR/>                        
+                        If you want to add feature you can create pull request or you can ask me to do it for you for a fee<BR/>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div id="status">
-    </div>
-    <div id="users">
-    </div>
-    <A HREF="https://github.com/nuclearcat/accel-ppp-miniadmin">Source code</A><br/>
-    (c) 2024 NuclearCat<BR/>
-    If you want to add feature you can create pull request or pay me to do it for you<BR/>
 </body>
 </html>
