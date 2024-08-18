@@ -1,5 +1,26 @@
 # ACCEL-PPP Miniadmin
 
+## I dont want to read, just give me the commands
+
+Debian 12
+```bash
+apt update
+apt install git docker-compose
+git clone https://github.com/nuclearcat/accel-ppp-miniadmin.git
+cd accel-ppp-miniadmin/install
+sh install.sh
+```
+After that it will ask you two questions:
+- Please enter secret token for SSTP Admin interface
+
+This is password for web interface
+
+- Please enter SSTP server hostname
+
+You need real domain name pointing to this server. Some hosting providers might provide you with subdomain, like **x-x-x-x.ip.linodeusercontent.com**
+
+After that you can access web interface at https://yourhostname:8080 , login, add user/password, then just spin up SSTP client (available by default in Windows) and connect to your server.
+
 ## Description
 
 This is simple web interface for ACCEL-PPP based VPN. It is mostly created to operate with accel-ppp-docker repository, to create easy to use VPN install, but in future might work with other setups as well.
