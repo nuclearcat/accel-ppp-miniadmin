@@ -16,9 +16,17 @@ if ! [ -x "$(command -v docker)" ]; then
     exit 1
 fi
 
+DOCKER_COMPOSE="docker-compose"
+
 if ! [ -x "$(command -v docker-compose)" ]; then
-    echo "Error: docker-compose is not installed."
-    exit 1
+    # maybe docker compose v2 is installed
+    if ! [ -x "$(command -v docker compose)" ]; then
+        echo "Error: docker-compose is not installed and docker compose v2 is not available."
+        echo "Please install docker-compose or docker compose v2."
+        exit 1
+    else
+        DOCKER_COMPOSE="docker compose"
+    fi
 fi
 
 # verify if port 80,443,8080 available
@@ -58,7 +66,7 @@ echo "SSTP_HOSTNAME=${SSTP_HOSTNAME}" >> .env
 mkdir -p accel-letsencrypt accel-ppp
 
 echo "Waiting for accel-ppp to start"
-docker-compose up -d
+$DOCKER_COMPOSE up -d
 
 echo "Web interface available at https://${SSTP_HOSTNAME}:8080"
 
