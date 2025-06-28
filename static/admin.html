@@ -2,51 +2,260 @@
 <html>
 <head>
     <title>ACCEL-PPP Admin interface</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
         #toast {
             position: fixed;
-            top: 0;
-            right: 0;
+            top: 20px;
+            right: 20px;
             background-color: #333;
             color: white;
-            padding: 10px;
-            margin: 10px;
-            border-radius: 5px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1050;
+            font-weight: 500;
+            min-width: 250px;
+            animation: slideIn 0.3s ease-out;
         }
-        #token {
-            margin: 10px;
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
-        #users {
-            margin: 10px;
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.95);
+            margin-bottom: 20px;
         }
-        #adduserform {
-            margin: 10px;
+        
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
         }
-        #adduser {
-            margin: 10px;
+        
+        .card-header h3 {
+            margin: 0;
+            font-weight: 600;
+            text-align: center;
         }
-        #userstable {
-            margin: 10px;
+        
+        .card-body {
+            padding: 25px;
         }
-        button {
-            margin: 5px;
+        
+        .card-footer {
+            background: rgba(248,249,250,0.8);
+            border-radius: 0 0 15px 15px;
+            padding: 20px 25px;
+            border-top: 1px solid rgba(0,0,0,0.1);
         }
+        
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn {
+            border-radius: 10px;
+            padding: 12px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+        }
+        
+        .table-responsive {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
         table {
             border-collapse: collapse;
             width: 100%;
+            margin: 0;
         }
+        
         th, td {
-            border: 1px solid black;
-            padding: 8px;
+            padding: 15px 12px;
             text-align: left;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
         }
+        
         th {
-            background-color: #f2f2f2;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            font-weight: 600;
+            color: #495057;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 0.5px;
+        }
+        
+        tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        tbody tr:hover {
+            background-color: rgba(102, 126, 234, 0.05);
+            transform: scale(1.01);
+        }
+        
+        .user-add-form {
+            background: rgba(248,249,250,0.5);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        #adduserform {
+            min-height: auto;
+        }
+        
+        #adduserform:empty {
+            display: none;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .footer-card {
+            background: rgba(255,255,255,0.97); /* light background for contrast */
+            backdrop-filter: blur(6px);
+            border: 1px solid #e0e0e0;
+        }
+        
+        .footer-card .card-body {
+            text-align: center;
+            color: #222 !important; /* black text */
+            padding: 20px;
+        }
+        
+        .footer-card a {
+            color: #111 !important; /* black link */
+            text-decoration: underline;
+            font-weight: 600;
+        }
+        
+        .footer-card a:hover {
+            color: #333 !important;
+            text-decoration: underline;
+        }
+        
+        .footer-card .fa-github {
+            color: #111 !important;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .card-body {
+                padding: 20px 15px;
+            }
+            
+            .card-footer {
+                padding: 15px;
+            }
+            
+            #toast {
+                right: 10px;
+                left: 10px;
+                min-width: auto;
+            }
+            
+            table {
+                font-size: 0.875rem;
+            }
+            
+            th, td {
+                padding: 10px 8px;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.875rem;
+            }
+            
+            .btn-sm {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .col-md-4.offset-md-4,
+            .col-md-8.offset-md-2 {
+                margin: 0;
+                padding: 0 10px;
+            }
+            
+            .card-header h3 {
+                font-size: 1.25rem;
+            }
+            
+            th, td {
+                padding: 8px 5px;
+                font-size: 0.8rem;
+            }
+            
+            .form-control {
+                padding: 10px 12px;
+            }
         }
 
     </style>
     <!-- include boostrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script>
         var token = '';
@@ -80,7 +289,6 @@
                         token = response.token;
                         showStatus(response.message, 'green');
                         getUsers();
-                        addUserForm();
                     } else {
                         showStatus(response.message, 'red');
                     }
@@ -92,10 +300,27 @@
         }
         function addUserForm() {
             var adduserform = document.getElementById('adduserform');
-            adduserform.innerHTML = '<div id="adduser"></div>';
-            var adduser = document.createElement('div');
-            adduser.innerHTML = '<input type="text" id="user" placeholder="Username"><input type="password" id="password" placeholder="Password">';
-            adduserform.appendChild(adduser);
+            // Clear any existing content first
+            adduserform.innerHTML = '';
+            // Create the form with the button in the same row
+            adduserform.innerHTML = `
+                <form onsubmit="addUser(); return false;">
+                    <div class="user-add-form">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-5 mb-2 mb-md-0">
+                                <input type="text" id="user" class="form-control" placeholder="Username">
+                            </div>
+                            <div class="col-md-5 mb-2 mb-md-0">
+                                <input type="password" id="password" class="form-control" placeholder="Password">
+                            </div>
+                            <div class="col-md-2 d-grid">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-user-plus me-2"></i>Add User
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>`;
         }
         function addUser() {
             var user = document.getElementById('user').value;
@@ -167,38 +392,49 @@
                         // users field have user/ip pairs
                         var users = document.getElementById('users');
                         // TODO add link to delete/update user
-                        users.innerHTML = '<div id="userstable"></div>';
-                        var table = document.createElement('table');
-                        table.innerHTML = '<tr><th>User</th><th>IP</th><th>Actions</th></tr>';
+                        users.innerHTML = '<div class="table-responsive"><table class="table table-hover"></table></div>';
+                        var table = users.querySelector('table');
+                        table.innerHTML = '<thead><tr><th>User</th><th>IP Address</th><th class="text-center">Actions</th></tr></thead><tbody></tbody>';
+                        var tbody = table.querySelector('tbody');
                         console.log(response);
                         for (var user of response.users) {
                             console.log(user);
                             // username / ip
                             var tr = document.createElement('tr');
                             var td = document.createElement('td');
-                            td.innerHTML = user.username;
+                            td.innerHTML = '<strong>' + user.username + '</strong>';
                             tr.appendChild(td);
                             td = document.createElement('td');
-                            td.innerHTML = user.ip;
+                            td.innerHTML = '<span class="text-muted">' + (user.ip || 'Not connected') + '</span>';
                             tr.appendChild(td);
                             td = document.createElement('td');
+                            td.className = 'text-center';
                             var del = document.createElement('button');
-                            del.innerHTML = 'Delete';
-                            del.onclick = function() { delUser(user['username']); };
+                            del.innerHTML = '<i class="fas fa-trash"></i> Delete';
+                            del.onclick = function(username) { 
+                                return function() { 
+                                    if(confirm('Are you sure you want to delete user "' + username + '"?')) {
+                                        delUser(username); 
+                                    }
+                                }; 
+                            }(user.username);
                             // add bootstrap classes
                             del.classList.add('btn');
                             del.classList.add('btn-danger');
+                            del.classList.add('btn-sm');
                             td.appendChild(del);
                             tr.appendChild(td);
 
-                            table.appendChild(tr);
+                            tbody.appendChild(tr);
                         }
-                        users.appendChild(table);
+                        // Call addUserForm only once after the table is populated
                         addUserForm();
                     } else {
                         showStatus(response.status, 'red');
-                        // remove table
+                        // remove table and clear the users div completely
                         document.getElementById('users').innerHTML = '';
+                        // still show the add user form
+                        addUserForm();
                     }
                 }
                 if (xhr.readyState == 4 && xhr.status != 200) {
@@ -214,18 +450,24 @@
     <!-- BOOTSTRAP LOGIN SCREEN -->     
     <div class="container">
         <div class="row" id="tokenrow">
-            <div class="col-md-4 offset-md-4">
+            <div class="col-12 col-sm-8 col-md-6 col-lg-4 mx-auto">
                 <div class="card">                    
                     <div class="card-header">
-                        <h3>Management interface login</h3>
+                        <h3><i class="fas fa-lock me-2"></i>Management Interface</h3>
                     </div>
                     <div class="card-body">
                         <form id="token" onsubmit="verifyToken(); return false;">
                             <div class="form-group mb-3">
-                                <label for="tokentext">Secret Token</label>
-                                <input type="password" id="tokentext" class="form-control" placeholder="Secret Token">
+                                <label for="tokentext" class="form-label">
+                                    <i class="fas fa-key me-2"></i>Secret Token
+                                </label>
+                                <input type="password" id="tokentext" class="form-control" placeholder="Enter your secret token">
                             </div>
-                            <button type="submit" class="btn btn-primary" onclick="verifyToken()">Login</button>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary" onclick="verifyToken()">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -233,10 +475,10 @@
         </div>
         <div class="row" id="usersrow" style="display: none;">
             <!-- wider card -->
-            <div class="col-md-8 offset-md-2">
+            <div class="col-12 col-lg-10 col-xl-8 mx-auto">
                 <div class="card">
                     <div class="card-header">
-                        <h3>Users</h3>
+                        <h3><i class="fas fa-users me-2"></i>User Management</h3>
                     </div>
                     <div class="card-body">
                         <div id="users"></div>
@@ -244,23 +486,30 @@
                     <!-- adduserform -->
                     <div class="card-footer">
                         <div id="adduserform"></div>
-                        <button type="submit" class="btn btn-primary" onclick="addUser()">Add user</button>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- copyrights at left -->
-        <div class="row">
-            <div class="col-md-4 offset-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <A HREF="https://github.com/nuclearcat/accel-ppp-miniadmin">Source code</A><br/>
-                        (c) 2024 NuclearCat<BR/>                        
-                        If you want to add feature you can create pull request or you can ask me to do it for you for a fee<BR/>
+        <!-- footer -->
+        <footer>
+            <div class="row mt-4">
+                <div class="col-12 col-sm-8 col-md-6 col-lg-4 mx-auto">
+                    <div class="card footer-card">
+                        <div class="card-body">
+                            <p class="mb-2">
+                                <i class="fab fa-github me-2"></i>
+                                <a href="https://github.com/nuclearcat/accel-ppp-miniadmin" target="_blank">Source Code</a>
+                            </p>
+                            <small>
+                                © 2024-2025 NuclearCat<br/>
+                                Want a new feature? Create a pull request or contact me!<br/>
+                                <span style="font-size:0.95em; color:#555;">License: <a href="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html" target="_blank">LGPL-2.1</a></span>
+                            </small>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </footer>
     </div>
 </body>
 </html>

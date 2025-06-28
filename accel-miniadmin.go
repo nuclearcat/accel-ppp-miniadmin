@@ -426,6 +426,15 @@ func main() {
 
 	flag.Parse()
 
+	// Check for ACCEL_SECRETS environment variable
+	accelSecrets := os.Getenv("ACCEL_SECRETS")
+	if accelSecrets != "" {
+		Chapfile = accelSecrets
+		log.Printf("Using secrets file from ACCEL_SECRETS environment: %s", Chapfile)
+	} else {
+		log.Printf("Environment ACCEL_SECRETS not set, using default: %s", Chapfile)
+	}
+
 	// Get admin password from env SSTP_ADMINTOKEN
 	Admintoken = os.Getenv("SSTP_ADMINTOKEN")
 	if Admintoken == "" {
