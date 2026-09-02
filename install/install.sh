@@ -16,18 +16,22 @@ if ! [ -x "$(command -v docker)" ]; then
     exit 1
 fi
 
-DOCKER_COMPOSE="docker-compose"
-
-if ! [ -x "$(command -v docker-compose)" ]; then
-    # maybe docker compose v2 is installed
-    if ! [ -x "$(command -v docker compose)" ]; then
-        echo "Error: docker-compose is not installed and docker compose v2 is not available."
-        echo "Please install docker-compose or docker compose v2."
-        exit 1
-    else
-        DOCKER_COMPOSE="docker compose"
-    fi
+# Probe compose by running it, not by looking for a binary: the v2 plugin is
+# invoked as "docker compose" and has no executable of its own to find.
+# Prefer v2, the standalone "docker-compose" may still be the end-of-life v1.
+if docker compose version >/dev/null 2>&1; then
+    DOCKER_COMPOSE="docker compose"
+elif docker-compose version >/dev/null 2>&1; then
+    DOCKER_COMPOSE="docker-compose"
+else
+    echo "Error: neither docker compose (v2) nor docker-compose (v1) is available."
+    echo "Please install the compose package for your distribution:"
+    echo "  Debian 13:                apt install docker-compose"
+    echo "  Ubuntu 24.04 and 26.04:   apt install docker-compose-v2"
+    exit 1
 fi
+
+echo "Using: ${DOCKER_COMPOSE} ($(${DOCKER_COMPOSE} version 2>/dev/null | head -1))"
 
 # verify if port 80,443,8080 available
 if [ -n "$(lsof -i :80)" ]; then
