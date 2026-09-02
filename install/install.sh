@@ -84,6 +84,37 @@ if [ -z "${SSTP_HOSTNAME}" ]; then
     exit 1
 fi
 
+# The hostname becomes the Let's Encrypt certificate name, so an IP literal is
+# never usable: certbot cannot validate one, and accel-miniadmin then waits
+# forever for /etc/letsencrypt/live/${SSTP_HOSTNAME}/fullchain.pem to appear.
+case "${SSTP_HOSTNAME}" in
+    *:*)
+        echo "Error: '${SSTP_HOSTNAME}' looks like an IPv6 address."
+        echo "SSTP_HOSTNAME must be a domain name, Let's Encrypt does not issue certificates for IP addresses."
+        exit 1
+        ;;
+esac
+
+if printf '%s' "${SSTP_HOSTNAME}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+    echo "Error: '${SSTP_HOSTNAME}' is an IP address."
+    echo "SSTP_HOSTNAME must be a domain name pointing to this host, Let's Encrypt does not issue certificates for IP addresses."
+    echo "Some hosting providers hand out a usable subdomain, like x-x-x-x.ip.linodeusercontent.com"
+    exit 1
+fi
+
+if ! printf '%s' "${SSTP_HOSTNAME}" | grep -Eq '^[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)+$'; then
+    echo "Error: '${SSTP_HOSTNAME}' is not a valid domain name."
+    echo "Expected something like sstp.example.com"
+    exit 1
+fi
+
+# Only a warning: split-horizon DNS or a record added moments ago may not
+# resolve here yet, but certbot will still need it to resolve publicly.
+if [ -x "$(command -v getent)" ] && ! getent hosts "${SSTP_HOSTNAME}" >/dev/null 2>&1; then
+    echo "Warning: '${SSTP_HOSTNAME}' does not resolve from this host."
+    echo "Certbot will fail unless it resolves publicly to this server, with ports 80 and 443 reachable."
+fi
+
 echo "SSTP_ADMINTOKEN=${SSTP_ADMINTOKEN}" > .env
 echo "SSTP_HOSTNAME=${SSTP_HOSTNAME}" >> .env
 

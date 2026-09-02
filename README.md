@@ -35,6 +35,8 @@ This is password for web interface
 
 You need real domain name pointing to this server. Some hosting providers might provide you with subdomain, like **x-x-x-x.ip.linodeusercontent.com**
 
+It cannot be an IP address - this name is what Let's Encrypt issues the certificate for, and certbot cannot validate an IP. `install.sh` rejects one, and warns if the name does not resolve yet.
+
 After that you can access web interface at https://yourhostname:8080 , login, add user/password, then just spin up SSTP client (available by default in Windows) and connect to your server.
 
 ## Description
