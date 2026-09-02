@@ -2,14 +2,30 @@
 
 ## I dont want to read, just give me the commands
 
-Debian 12
+Debian 13 (trixie)
 ```bash
 apt update
-apt install git docker-compose
+apt install git lsof docker.io docker-compose
 git clone https://github.com/nuclearcat/accel-ppp-miniadmin.git
 cd accel-ppp-miniadmin/install
 sh install.sh
 ```
+
+Ubuntu 24.04 LTS and Ubuntu 26.04 LTS
+```bash
+apt update
+apt install git lsof docker.io docker-compose-v2
+git clone https://github.com/nuclearcat/accel-ppp-miniadmin.git
+cd accel-ppp-miniadmin/install
+sh install.sh
+```
+
+Note the different compose package per distribution. On Debian 13 the
+`docker-compose` package is already Compose v2. On Ubuntu it is not: 24.04 still
+ships the end-of-life Python Compose v1 under that name, and 26.04 dropped the
+name entirely, so on both you want `docker-compose-v2`. `install.sh` works with
+either v1 or v2. Debian 12 also still works, using the same command as Debian 13.
+
 After that it will ask you two questions:
 - Please enter secret token for SSTP Admin interface
 
@@ -35,6 +51,10 @@ This is simple web interface for ACCEL-PPP based VPN. It is mostly created to op
 
 You need host with ports 443(for SSTP), 80(for Let's encrypt certbot) and 8080(for miniadmin) available and open. Also you need hostname pointing to this host.
 
+Required packages: `git`, `lsof`, docker and docker compose - see the
+distribution specific commands above. `lsof` is used by `install.sh` to check
+that the required ports are actually free before starting anything.
+
 ```bash
 git clone https://github.com/nuclearcat/accel-ppp-miniadmin.git
 cd accel-ppp-miniadmin/install
@@ -43,7 +63,7 @@ sh install.sh
 
 ## Configuration
 
-.env file contains all configuration options - hostname and token. If you want to update token, just change it in .env file and restart daemons using `docker-compose restart`.
+.env file contains all configuration options - hostname and token. If you want to update token, just change it in .env file and restart daemons using `docker-compose restart` (or `docker compose restart` on Compose v2).
 
 ## Usage
 
