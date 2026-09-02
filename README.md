@@ -20,6 +20,13 @@ cd accel-ppp-miniadmin/install
 sh install.sh
 ```
 
+If you already installed Docker from Docker's own repository (`docker-ce`,
+`docker-compose-plugin`), skip the docker packages above and install only
+`git lsof` - `apt install docker.io docker-compose-v2` would fail there, because
+both packages ship `/usr/libexec/docker/cli-plugins/docker-compose` and dpkg
+refuses to overwrite a file owned by another package. Docker CE already provides
+everything `install.sh` needs, check with `docker compose version`.
+
 Note the different compose package per distribution. On Debian 13 the
 `docker-compose` package is already Compose v2. On Ubuntu it is not: 24.04 still
 ships the end-of-life Python Compose v1 under that name, and 26.04 dropped the
