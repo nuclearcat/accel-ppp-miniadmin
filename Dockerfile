@@ -1,5 +1,5 @@
 # golang
-FROM golang:1.22.5-alpine AS builder
+FROM golang:1.27-alpine AS builder
 
 # Set the Current Working Directory inside the container
 WORKDIR /app
@@ -17,7 +17,7 @@ RUN go mod download
 RUN go build -o /go/bin/accel-miniadmin accel-miniadmin.go
 
 # Start a new stage from scratch
-FROM alpine:3.20
+FROM alpine:3.24
 
 # Install dependencies
 COPY --from=builder /go/bin/accel-miniadmin /usr/bin/accel-miniadmin
