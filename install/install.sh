@@ -34,18 +34,27 @@ fi
 echo "Using: ${DOCKER_COMPOSE} ($(${DOCKER_COMPOSE} version 2>/dev/null | head -1))"
 
 # verify if port 80,443,8080 available
-if [ -n "$(lsof -i :80)" ]; then
-    echo "Port 80 is already in use"
+# lsof must be present: without it the command substitution below is empty and
+# every port would look free, so the install would happily proceed onto ports
+# that are already taken.
+if ! [ -x "$(command -v lsof)" ]; then
+    echo "Error: lsof is not installed, cannot verify that ports 80, 443 and 8080 are free."
+    echo "Please install it: apt install lsof"
     exit 1
 fi
-if [ -n "$(lsof -i :443)" ]; then
-    echo "Port 443 is already in use"
-    exit 1
+
+# lsof only reports sockets of processes we may inspect, so a non-root run can
+# miss a listener owned by someone else and wrongly report the port as free.
+if [ "$(id -u)" -ne 0 ]; then
+    echo "Warning: not running as root, the port checks below may miss listeners owned by other users."
 fi
-if [ -n "$(lsof -i :8080)" ]; then
-    echo "Port 8080 is already in use"
-    exit 1
-fi
+
+for PORT in 80 443 8080; do
+    if [ -n "$(lsof -i :${PORT})" ]; then
+        echo "Port ${PORT} is already in use"
+        exit 1
+    fi
+done
 
 echo "Please enter secret token for SSTP Admin interface"
 read SSTP_ADMINTOKEN
