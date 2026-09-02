@@ -16,6 +16,17 @@ if ! [ -x "$(command -v docker)" ]; then
     exit 1
 fi
 
+# The client alone is not enough: a half-configured package (for example an
+# aborted dpkg run) leaves /usr/bin/docker in place with no daemon behind it,
+# and every command below would fail only at the very end.
+if ! docker info >/dev/null 2>&1; then
+    echo "Error: cannot talk to the docker daemon at unix:///var/run/docker.sock."
+    echo "Check that it is installed and running, and that you have access to it:"
+    echo "  systemctl enable --now docker"
+    echo "  docker info"
+    exit 1
+fi
+
 # Probe compose by running it, not by looking for a binary: the v2 plugin is
 # invoked as "docker compose" and has no executable of its own to find.
 # Prefer v2, the standalone "docker-compose" may still be the end-of-life v1.
@@ -79,7 +90,13 @@ echo "SSTP_HOSTNAME=${SSTP_HOSTNAME}" >> .env
 mkdir -p accel-letsencrypt accel-ppp
 
 echo "Waiting for accel-ppp to start"
-$DOCKER_COMPOSE up -d
+# Do not announce success on a failed start: without this check a pull error or
+# an unreachable daemon still printed the web interface URL below.
+if ! $DOCKER_COMPOSE up -d; then
+    echo "Error: ${DOCKER_COMPOSE} up failed, the containers are not running."
+    echo "Fix the error above and re-run: ${DOCKER_COMPOSE} up -d"
+    exit 1
+fi
 
 echo "Web interface available at https://${SSTP_HOSTNAME}:8080"
 
